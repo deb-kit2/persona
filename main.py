@@ -15,11 +15,13 @@ def parse_args() :
 
     # model args
     parser.add_argument("--encdec", type = str, default = "bart")
+    parser.add_argument("--graph_type", type = str, default = "paperGCN")
+
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
     parser.add_argument("--save_best", type = bool, default = True)
+    parser.add_argument("--save_name", type = str, default = "models/")
     
-
     args = parser.parse_args()
     return args
 
@@ -65,10 +67,8 @@ def train(model, data, optimizer, train_mask, val_mask, adj = None,
     best_val_loss = 9e15
 
     for epoch in range(max_epochs) :
-        loss, acc = train_step(model, data, optimizer, loss_function, 
-                               mask = train_mask, adj = adj)
-        val_loss, val_acc = evaluate_step(model, data, loss_function, 
-                                          mask = val_mask, adj = adj)
+        loss, acc = train_step(model, data, optimizer, loss_function)
+        val_loss, val_acc = evaluate_step(model, data, loss_function)
 
         history["loss"].append(loss)
         history["val_loss"].append(val_loss)
