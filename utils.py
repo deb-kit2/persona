@@ -1,3 +1,4 @@
+import copy
 import json
 
 import torch
@@ -14,20 +15,31 @@ def construct_adj(max_n, n_nodes, n_personas = 4) :
 class PersonaDataset(Dataset) :
     # Dataset class for the PersonaChat dataset
 
-    def __init__(self, args, tokenizer, subset = "train") :
+    def __init__(self, args, subset = "train") :
         
-        self.tokenizer = tokenizer
         self.max_len = args.max_length
+        self.encrep = args.encrep
+
+        if args.encdec == "bart" :
+            # init bart
+            self.tokenizer = BartTokenizer.from_pretrained(args.pretrained_name)
+            self.encoder = BARTEncoder.from_pretrained(args.pretrained_name)
+        else :
+            raise NotImplementedError()
+
+        self.conv_id = []
+        self.conv_lens = [] # len - 1
+
+        self.persona = []
+        self.conversation = [] # everything except target
+        self.last = [] # last in conversation, <CLS> to be merged here
+        self.target = [] # to be produced
 
         DATA_PATH = ""
         with open(DATA_PATH, "r", encoding = "utf-8") as fi :
             data = json.load(fi)[subset]
         
-        self.conv_id = []
-        self.conv_lens = []
-        self.conversation = []
-        self.target = []
-        self.persona = []
+        self.dummy = torch.zeros((), dtype = torch.float32)
 
     def __len__(self) :
         return len(self.conv_id)
@@ -37,18 +49,21 @@ class PersonaDataset(Dataset) :
         conversation = self.tokenizer.batch_encode_plus(
             self.conversation[index],
             max_length = self.max_len,
-            pad_to_max = True,
             truncation = True, 
             padding = "max_length",
             return_tensors = "pt",
             return_attention_mask = True,
             verbose = False
         )
+        encoded_conv = self.encoder(conversation.input_ids, conversation.attention_mask)[0]
+        if self.encrep == "first" :
+            encoded_conv = encoded_conv[:, 0, :]
+        else :
+            encoded_conv = torch.mean(encoded_conv, dim = -2)
 
         target = self.tokenizer.batch_encode_plus(
             [self.target[index]],
             max_length = self.max_len,
-            pad_to_max = True,
             truncation = True, 
             padding = "max_length",
             return_tensors = "pt",
@@ -56,27 +71,47 @@ class PersonaDataset(Dataset) :
             verbose = False
         )
 
+        labels = copy.deepcopy(target.input_ids)
+        labels = torch.tensor([[-100 if token == self.tokenier.pad_token_id else token for token in l] for l in labels])
+
         persona = self.tokenizer.batch_encode_plus(
             self.persona[index],
             max_length = self.max_len,
-            pad_to_max = True,
             truncation = True,
             padding = "max_length",
             return_tensors = "pt",
             return_attention_mask = False,
             verbose = False
         )
+        encoded_persona = self.encoder(persona.input_ids, persona.attention_mask)[0]
+        if self.encrep == "first" :
+            encoded_persona = encoded_persona[:, 0, :]
+        else :
+            encoded_persona = torch.mean(encoded_persona, dim = -2)
+
+        last = self.tokenizer.batch_encode_plus(
+            [self.last[index]],
+            max_length = self.max_len,
+            truncation = True,
+            padding = "max_length",
+            return_tensors = "pt",
+            return_attention_mask = False,
+            verbose = False
+        )
+        encoded_last = self.encoder(last.input_ids, last.attention_mask)[0]
 
         return {
             "conv_id" : self.conv_id[index],
-            "conversation_input_ids" : conversation["input_ids"],
-            "conversation_attention_mask" : conversation["attention_mask"],
- 
-            "target_input_ids" : target["input_ids"].squeeze(),
-            "target_attention_mask" : target["attention_mask"].squeeze(),
+            "conv_cls" : encoded_conv,
+            "persona_cls" : encoded_persona,
 
-            "persona_input_ids" : persona["input_ids"],
-            "person_attention_mask" : persona["attention_mask"],
+            "encoder_hidden_state" : encoded_last.squeeze(),
+            "encoder_attention_mask" : last.attention_mask,
 
-            "adj" : ,
+            "decoder_input_ids" : target.input_ids.squeeze(),
+            "decoder_attention_mask" : target.attention_mask.squeeze(),
+
+            "labels" : labels.squeeze()
+
+            "adj" : []
         }

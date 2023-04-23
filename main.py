@@ -12,10 +12,16 @@ def parse_args() :
     parser.add_argument("--train", type = bool, default = True)
     parser.add_argument("--lr", type = float, default = 3e-4)
     parser.add_argument("--epochs", type = int, default = 200)
+    parser.add_argument("--max_conv_length", type = int, default = 26)
 
     # model args
     parser.add_argument("--encdec", type = str, default = "bart")
+    parser.add_argument("--pretrained_name", type = str, default = "facebook/bart-base")
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
+    parser.add_argument("--encrep", type = "str", default = "first",
+                        help = "can be 'mean' or 'first'")
+    parser.add_argument("--heads", type = int, default = 8)
+    parser.add_argument("--dropout", type = float, default = 0.25)
 
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
@@ -31,14 +37,7 @@ def train_step(model, data, optimizer, loss_function) :
     model.train()
     # do something
 
-    loss = loss_function(logits, y)
-    optimizer.zero_grad()
-    loss.backward()
-    optimizer.step()
-
-    accuracy = torch.sum(preds == y) / y.shape[0]
-
-    return loss.item(), accuracy.item()
+    return
 
 
 @torch.no_grad()
@@ -46,14 +45,8 @@ def evaluate_step(model, data, loss_function) :
 
     model.eval()
     # do something
-
-    preds = logits.argmax(dim = -1)
-    y = node_labels[mask]
-
-    loss = loss_function(logits, y)
-    accuracy = torch.sum(preds == y) / y.shape[0]
-
-    return loss.item(), accuracy.item()
+    
+    return
 
 
 def train(model, data, optimizer, train_mask, val_mask, adj = None,
