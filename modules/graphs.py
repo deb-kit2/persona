@@ -2,6 +2,50 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as f
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
+
+class GCNLayer(nn.Module) :
+
+    def __init__(self, d_in, d_out) :
+        super().__init__()
+        self.projection = nn.Linear(d_in, d_out)
+
+    def forward(self, x, adj_hat) :
+        # x : Node features : batch, n_nodes, d_in
+        # adj_hat : adj matrix with self connections : batch, n_nodes, n_nodes
+
+        x = self.projection(x)
+        x = torch.bmm(adj_hat, x)
+        x = x / adj_hat.sum(dim = -1, keepdims = True)
+
+        return x 
+    
+
+class GCNLayerOrig(nn.Module) :
+
+    def __init__(self, d_in, d_out) :
+        super().__init__()
+        self.projection = nn.Linear(d_in, d_out)
+
+    def forward(self, x, adj_hat) :
+        # x : Node features : batch, n_nodes, d_in
+        # adj_hat : adj matrix with self connections : batch, n_nodes, n_nodes
+
+        n_nodes = adj_hat.size()[1]
+        adj = adj_hat - torch.eye(n_nodes).to(device) # without self connections
+
+        d_hat = adj.sum(dim = -1)
+        d_hat = torch.pow(d_hat, -0.5)
+        d_hat = torch.diag_embed(d_hat) # batch, n_nodes, n_nodes
+
+        dad = torch.bmm(torch.bmm(d_hat, adj_hat), d_hat) # normalizing matrix
+
+        x = self.projection(x) # to another dimension
+        x = torch.bmm(dad, x) # for all node embeddings, in a matrix form
+
+        return x 
+    
 
 class GATLayer(nn.Module) :
 
@@ -58,48 +102,3 @@ class GATLayer(nn.Module) :
             return res, attentions
         return res
     
-
-# for test
-def main() :
-    layer = GATLayer(2, 2, n_heads = 2)
-    layer.projection.weight.data = torch.Tensor([[1., 0.], [0., 1.]])
-    layer.projection.bias.data = torch.Tensor([0., 0.])
-    layer.a.data = torch.Tensor([[-0.2, 0.3], [0.1, -0.1]])
-
-    adj_matrix = torch.Tensor([
-        [[1., 1., 0., 0.],
-         [1., 1., 1., 1.],
-         [0., 1., 1., 1.],
-         [0., 1., 1., 1.]],
-        
-        [[1., 1., 0., 0.],
-         [1., 1., 1., 0.],
-         [0., 1., 1., 0.],
-         [0., 0., 0., 1.]]
-        ])
-
-    # node_feats = torch.arange(8, dtype = torch.float32).view(1, 4, 2)
-    node_feats = torch.Tensor(
-        [[[0., 1.],
-          [2., 3.],
-          [4., 5.],
-          [6., 7.]],
-        
-        [[8., 9.],
-         [10., 11.],
-         [12., 13.],
-         [0., 0.]]
-        ])
-    
-    with torch.no_grad() :
-        out_feats, attentions = layer(node_feats, adj_matrix, True)
-        print("Output node features : ")
-        print(out_feats, "\n")
-
-        print("Attentions : ")
-        print(attentions.permute(0, 3, 1, 2))
-
-        # need to calculate by hand and make equality checks
-
-if __name__ == "__main__" :
-    main()

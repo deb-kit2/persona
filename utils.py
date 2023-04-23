@@ -4,6 +4,9 @@ import json
 import torch
 from torch.utils.data import Dataset
 
+from transformers import BartTokenizer, T5Tokenizer
+from modules.encoders import BARTEncoder, T5Encoder
+
 def construct_adj(max_n, n_nodes, n_personas = 4) :
     # returns the unweighted and relation-unaware graph
     
@@ -111,7 +114,7 @@ class PersonaDataset(Dataset) :
             "decoder_input_ids" : target.input_ids.squeeze(),
             "decoder_attention_mask" : target.attention_mask.squeeze(),
 
-            "labels" : labels.squeeze()
+            "labels" : labels.squeeze(),
 
             "adj" : []
         }
