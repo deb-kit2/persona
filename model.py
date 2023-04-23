@@ -31,13 +31,24 @@ class PersonaModel(nn.Module) :
         self.decoder = BARTDecoder.from_pretrained(args.pretrained_name)
         
 
-    def forward(self, x, adj_hat) :
+    def forward(self, x, persona, adj_hat, last, conv_lens) :
         # takes in conversations, and adjacency matrices in batched format.
-        # n_nodes = n_turns in a conversation
-        # x : conversations : batch, n_nodes
-        # adj_hat : adj matrices : batch, n_turns, n_nodes
+        # x : conversation : batch, n_nodes, d_in
+        # persona : batch, 4, d_in 
+        # adj_hat : batch, 4 + n_nodes, 4 + n_nodes
+
+        attented, _ = self.mha(x, x, x, need_weights = False)
+        # add positional embedding?
+        
+        x = torch.cat((attented, persona), dim = -2)
+
+        x = f.dropout(attented, self.dropout)
+        x = self.gcn1(x, adj_hat)
 
         x = f.dropout(x, self.dropout)
-        x = f.dropout(x, self.dropout)
+        x = self.gcn2(x, adj_hat)
+
+        cls = torch.index_select(x, dim = 1, index = conv_lens) # test
+
 
         return
