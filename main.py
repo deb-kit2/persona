@@ -12,16 +12,17 @@ def parse_args() :
     parser.add_argument("--train", type = bool, default = True)
     parser.add_argument("--lr", type = float, default = 3e-4)
     parser.add_argument("--epochs", type = int, default = 200)
-    parser.add_argument("--max_conv_length", type = int, default = 26)
+    parser.add_argument("--max_conv_length", type = int, default = 50)
 
     # model args
+    parser.add_argument("--max_length", type = int, default = 32)
     parser.add_argument("--encdec", type = str, default = "bart")
     parser.add_argument("--pretrained_name", type = str, default = "facebook/bart-base")
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
     parser.add_argument("--encrep", type = "str", default = "first",
                         help = "can be 'mean' or 'first'")
     parser.add_argument("--heads", type = int, default = 8)
-    parser.add_argument("--dropout", type = float, default = 0.25)
+    parser.add_argument("--dropout",type = float, default = 0.25)
 
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
