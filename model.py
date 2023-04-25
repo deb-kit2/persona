@@ -5,8 +5,6 @@ import torch.nn.functional as f
 from modules.graphs import GCNLayer, GCNLayerOrig, GATLayer
 from modules.decoders import BARTDecoder, T5Decoder
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-
 
 class PersonaModel(nn.Module) :
     def __init__(self, args) :
@@ -32,7 +30,7 @@ class PersonaModel(nn.Module) :
         self.gcn2 = GCNLayerOrig(self.d_in, self.d_in)
         
         self.decoder = BARTDecoder.from_pretrained(args.pretrained_name)
-        self.lm_head = nn.Linear(self.d_in, self.decoder.sharednum_embeddings, bias = False)
+        self.lm_head = nn.Linear(self.d_in, self.decoder.shared.num_embeddings, bias = False)
         
 
     def forward(self, x, persona, adj_hat, mask,
