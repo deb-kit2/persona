@@ -31,6 +31,7 @@ class PersonaDataset(Dataset) :
         self.max_len = args.max_length
         self.encrep = args.encrep
         self.max_conv_length = args.max_conv_length
+        self.max_persona_length = 6
 
         if args.encdec == "bart" :
             # init bart
@@ -84,8 +85,11 @@ class PersonaDataset(Dataset) :
         else :
             encoded_conv = torch.mean(encoded_conv, dim = -2)
 
-        dummy = torch.zeros((self.max_conv_length - encoded_conv.shape[0], self.d_in), dtype = torch.float32)
-        encoded_conv = torch.cat((encoded_conv, dummy), dim = 0)
+        dummy = torch.zeros((self.max_conv_length - self.conv_lens[index], self.d_in), dtype = torch.float32)
+        encoded_conv = torch.cat((dummy, encoded_conv), dim = 0)
+
+        mask = [True] * (self.max_conv_length - self.conv_lens[index]) + [False] * self.conv_lens[index]
+        mask = torch.tensor(mask, dtype = torch.bool)
 
         target = self.tokenizer.batch_encode_plus(
             [self.target[index]],
@@ -115,6 +119,9 @@ class PersonaDataset(Dataset) :
         else :
             encoded_persona = torch.mean(encoded_persona, dim = -2)
 
+        dummy = torch.zeros((self.max_persona_length - len(self.persona[index]), self.d_in), dtype = torch.float32)
+        encoded_persona = torch.cat((dummy, encoded_persona), dim = 0)
+
         last = self.tokenizer.batch_encode_plus(
             [self.last[index]],
             max_length = self.max_len,
@@ -131,6 +138,8 @@ class PersonaDataset(Dataset) :
         return {
             "conv_id" : self.conv_id[index],
             "conv_cls" : encoded_conv,
+            "conv_mask" : mask,
+            
             "persona_cls" : encoded_persona,
 
             "encoder_hidden_state" : encoded_last.squeeze(),

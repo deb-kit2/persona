@@ -13,6 +13,7 @@ def parse_args() :
     parser.add_argument("--lr", type = float, default = 3e-4)
     parser.add_argument("--epochs", type = int, default = 200)
     parser.add_argument("--max_conv_length", type = int, default = 50)
+    parser.add_argument("--batch_size", type = int, default = 8)
 
     # model args
     parser.add_argument("--max_length", type = int, default = 32)
@@ -21,7 +22,7 @@ def parse_args() :
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
     parser.add_argument("--encrep", type = "str", default = "first",
                         help = "can be 'mean' or 'first'")
-    parser.add_argument("--heads", type = int, default = 8)
+    parser.add_argument("--heads", type = int, default = 1)
     parser.add_argument("--dropout",type = float, default = 0.25)
 
     # callbacks
