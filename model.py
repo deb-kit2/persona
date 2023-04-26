@@ -12,6 +12,7 @@ class PersonaModel(nn.Module) :
 
         self.batch_size = args.batch_size
         self.num_heads = args.num_heads
+        self.max_conv_length = args.max_conv_length
 
         self.dropout = args.dropout
 
@@ -41,13 +42,13 @@ class PersonaModel(nn.Module) :
         # persona : batch, 6, d_in 
         # adj_hat : batch, 6 + 50, 6 + 50
 
+        mask_ = mask.unsqueeze(dim = 1).repeat(self.num_heads, self.max_conv_length, 1)
         attented, _ = self.mha(x, x, x, 
                                need_weights = False, 
-                               attn_mask = )
+                               attn_mask = mask_)
         # add positional embedding?
 
-        # something to be done here with mask
-        x = attented * (~ mask.repeat())
+        x = attented * (~ mask.unsqueeze(dim = 2))
         x = torch.cat((persona, attented), dim = -2)
 
         x = f.dropout(attented, self.dropout)

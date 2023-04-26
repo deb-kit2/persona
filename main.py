@@ -1,3 +1,5 @@
+import json
+import logging
 import argparse
 
 import torch
@@ -30,7 +32,7 @@ def parse_args() :
     parser.add_argument("--encdec", type = str, default = "bart")
     parser.add_argument("--pretrained_name", type = str, default = "facebook/bart-base")
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
-    parser.add_argument("--encrep", type = "str", default = "first",
+    parser.add_argument("--encrep", type = str, default = "first",
                         help = "can be 'mean' or 'first'")
     parser.add_argument("--heads", type = int, default = 1)
     parser.add_argument("--dropout",type = float, default = 0.25)
@@ -38,9 +40,9 @@ def parse_args() :
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
     parser.add_argument("--save_best", type = bool, default = True)
-    parser.add_argument("--save_name", type = str, default = "models/m")
+    parser.add_argument("--save_name", type = str, required = True)
     
-    parser.add_argument("--print_every", type = int, default = 5)
+    parser.add_argument("--print_every", type = int, default = 1)
 
     args = parser.parse_args()
     return args
@@ -51,6 +53,7 @@ def product(p) :
     for l in p.size() :
         res  *= l
     return res
+
 
 def train_step(model, data, optimizer, scheduler, loss_function) :
     
@@ -104,6 +107,7 @@ def train(model, train_data, test_data,
           print_every = 20, 
           save_best = True, save_name = "models/ourModel") :
 
+    logging.info("Model training started. :D\n")
     history = {"loss" : [], "val_loss" : [], "acc" : [], "val_acc" : []}
     best_val_loss = 9e15
 
@@ -116,39 +120,64 @@ def train(model, train_data, test_data,
         history["acc"].append(acc)
         history["val_acc"].append(val_acc)
 
+        if epoch % print_every == 0 :
+            logging.debug(f"Epoch : {epoch}\n##########" + \
+                          f"\nTrain loss : {loss:.4f}, Train accuracy : {acc:.4f}" + \
+                          f"\nValidation loss : {val_loss:.4f}, Validation accuracy : {val_acc:.4f}")
+        
         if val_loss < best_val_loss :
             best_val_loss = val_loss
             if save_best :
-                torch.save(model.state_dict(), save_name + f"_{epoch}.pt")
-
+                logging.info("Saving best model : " + save_name + ".pt")
+                torch.save(model.state_dict(), save_name + ".pt")
+        
         if epoch > early_stopping and val_loss > sum(history["val_loss"][-early_stopping -1 : -1]) / early_stopping :
-            print("\nEarly stopping...")
+            logging.info("\nEarly stopping...")
             break
-
-        if epoch % print_every == 0 :
-            print(f"\nEpoch : {epoch}\n##########")
-            print(f"Train loss : {loss:.4f}, Train accuracy : {acc:.4f}")
-            print(f"Validation loss : {val_loss:.4f}, Validation accuracy : {val_acc:.4f}")
 
     return history
 
 
 if __name__ == "__main__" :
+    # reproducibility
+    torch.manual_seed(42)
+
     args = parse_args()
+
+    logging.basicConfig(level = logging.DEBUG,
+                        handlers = [
+                            logging.FileHandler("logs/" + args.save_name.split("/")[-1] + ".log"),
+                            logging.StreamHandler()
+                        ],
+                        format = "%(levelname)s : %(message)s")
     
-    train_data = PersonaDataset(args, "train")
-    train_data = DataLoader(train_data, batch_size = args.batch_size, shuffle = True)
+    logging.info("\n" + json.dumps({key : value for key, value in vars(args).items()}, indent = 4) + "\n")
+
+    
+    if args.train : 
+        train_data = PersonaDataset(args, "train")
+        train_data = DataLoader(train_data, batch_size = args.batch_size, shuffle = True)
+        logging.info("Train data loaded.")
+
     test_data = PersonaDataset(args, "valid")
     test_data = DataLoader(test_data, batch_size = args.batch_size, shuffle = False)
+    logging.info("Test data loaded.")
 
     model = PersonaModel(args)
-    optimizer = AdamW(model.parameters(), lr = args.lr)
-    scheduler = get_scheduler("linear", 
-                              optimizer = optimizer,
-                              num_warmup_steps = args.warmup,
-                              num_training_steps = args.epochs * len(train_data))
+    logging.info("Model initialized.")
     
-    history = train(model, train_data, test_data,
-                    optimizer = optimizer, scheduler = scheduler,
-                    max_epochs = args.epochs, early_stopping = args.es, 
-                    print_every = args.print_every, save_name = args.save_name)
+    if args.train :
+        optimizer = AdamW(model.parameters(), lr = args.lr)
+        scheduler = get_scheduler("linear", 
+                                  optimizer = optimizer,
+                                  num_warmup_steps = args.warmup,
+                                  num_training_steps = args.epochs * len(train_data))
+        logging.info("Optimizer and Scheduler ready.")
+        
+        history = train(model, train_data, test_data,
+                        optimizer = optimizer, scheduler = scheduler,
+                        max_epochs = args.epochs, early_stopping = args.es, 
+                        print_every = args.print_every, save_name = args.save_name)
+        logging.info("Model training finished.")
+    else :
+        pass

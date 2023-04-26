@@ -7,11 +7,23 @@ from torch.utils.data import Dataset
 from transformers import BartTokenizer, T5Tokenizer
 from modules.encoders import BARTEncoder, T5Encoder
 
-def construct_adj(max_n, n_nodes, n_personas = 4) :
+
+def construct_adj(n_nodes, n_persona, max_n = 56) :
     # returns the unweighted and relation-unaware graph
+    # persona self, make bidirectional next experiment: reason persona might change over conv
     
     adj = torch.zeros((max_n, max_n))
-    
+
+    for i in range(56 - n_nodes, 56) :
+        adj[i][i] = 1
+        if i + 1 < 56 :
+            adj[i + 1, i] = 1
+        if i + 2 < 56 :
+            adj[i + 2, i] = 1
+            adj[i, i + 2] = 1
+    for i in range(56 - n_nodes + 1, 56, 2) :
+        for j in range(n_persona) :
+            adj[i, j] = 1
 
     return adj
 
@@ -102,7 +114,7 @@ class PersonaDataset(Dataset) :
         )
 
         labels = copy.deepcopy(target.input_ids)
-        labels = torch.tensor([[-100 if token == self.tokenier.pad_token_id else token for token in l] for l in labels])
+        labels = torch.tensor([[-100 if token == self.tokenizer.pad_token_id else token for token in l] for l in labels])
 
         persona = self.tokenizer.batch_encode_plus(
             self.persona[index],
@@ -110,7 +122,7 @@ class PersonaDataset(Dataset) :
             truncation = True,
             padding = "max_length",
             return_tensors = "pt",
-            return_attention_mask = False,
+            return_attention_mask = True,
             verbose = False
         )
         encoded_persona = self.encoder(persona.input_ids, persona.attention_mask)[0]
@@ -120,7 +132,7 @@ class PersonaDataset(Dataset) :
             encoded_persona = torch.mean(encoded_persona, dim = -2)
 
         dummy = torch.zeros((self.max_persona_length - len(self.persona[index]), self.d_in), dtype = torch.float32)
-        encoded_persona = torch.cat((dummy, encoded_persona), dim = 0)
+        encoded_persona = torch.cat((encoded_persona, dummy), dim = 0)
 
         last = self.tokenizer.batch_encode_plus(
             [self.last[index]],
@@ -128,12 +140,12 @@ class PersonaDataset(Dataset) :
             truncation = True,
             padding = "max_length",
             return_tensors = "pt",
-            return_attention_mask = False,
+            return_attention_mask = True,
             verbose = False
         )
         encoded_last = self.encoder(last.input_ids, last.attention_mask)[0]
 
-        adj = construct_adj(self.max_conv_length, self.conv_lens[index])
+        adj = construct_adj(self.conv_lens[index], len(self.persona[index]))
 
         return {
             "conv_id" : self.conv_id[index],
@@ -150,6 +162,6 @@ class PersonaDataset(Dataset) :
 
             "labels" : labels.squeeze(),
 
-            "adj" : []
+            "adj" : adj
         }
     

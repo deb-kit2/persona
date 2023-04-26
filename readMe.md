@@ -1,6 +1,7 @@
 ## To - do :
- - [ ] Model forward masking
+ - [x] Model forward masking
  - [x] finish main.py
- - [ ] adj in utils
- - [ ] logging 
+ - [x] adj in utils
+ - [x] logging 
  - [ ] metrics
+ - [ ] test in main
