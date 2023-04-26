@@ -179,10 +179,11 @@ if __name__ == "__main__" :
                         max_epochs = args.epochs, early_stopping = args.es, 
                         print_every = args.print_every, save_name = args.save_name)
         logging.info("Model training finished.")
-        
+
     else :
         model.load_state_dict(args.save_name)
         logging.info("Model weights loaded.")
 
         loss, acc = evaluate_step(model, test_data, nn.CrossEntropyLoss())
         logging.info(f"Model f{args.save_name}\n##########\nValidation loss : {loss:.4f}, Validation accuracy : {acc:.4f}")
+        
