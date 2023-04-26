@@ -4,4 +4,4 @@
  - [x] adj in utils
  - [x] logging 
  - [ ] metrics
- - [ ] test in main
+ - [x] test in main

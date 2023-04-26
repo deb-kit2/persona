@@ -163,7 +163,7 @@ if __name__ == "__main__" :
     test_data = DataLoader(test_data, batch_size = args.batch_size, shuffle = False)
     logging.info("Test data loaded.")
 
-    model = PersonaModel(args)
+    model = PersonaModel(args).to(device)
     logging.info("Model initialized.")
     
     if args.train :
@@ -179,5 +179,10 @@ if __name__ == "__main__" :
                         max_epochs = args.epochs, early_stopping = args.es, 
                         print_every = args.print_every, save_name = args.save_name)
         logging.info("Model training finished.")
+        
     else :
-        pass
+        model.load_state_dict(args.save_name)
+        logging.info("Model weights loaded.")
+
+        loss, acc = evaluate_step(model, test_data, nn.CrossEntropyLoss())
+        logging.info(f"Model f{args.save_name}\n##########\nValidation loss : {loss:.4f}, Validation accuracy : {acc:.4f}")
