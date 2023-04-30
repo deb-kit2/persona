@@ -8,7 +8,7 @@ from modules.decoders import BARTDecoder, T5Decoder
 
 class PersonaModel(nn.Module) :
     def __init__(self, args) :
-        self.__init__()
+        super(PersonaModel, self).__init__()
 
         self.batch_size = args.batch_size
         self.num_heads = args.num_heads
@@ -24,7 +24,7 @@ class PersonaModel(nn.Module) :
             self.d_in = 512
 
         self.mha = nn.MultiheadAttention(batch_first = True, embed_dim = self.d_in, 
-                                         num_heads = args.heads, dropout = self.dropout
+                                         num_heads = args.num_heads, dropout = self.dropout
                                         )
         
         self.gcn1 = GCNLayerOrig(self.d_in, self.d_in)
@@ -51,7 +51,7 @@ class PersonaModel(nn.Module) :
         x = attented * (~ mask.unsqueeze(dim = 2))
         x = torch.cat((persona, attented), dim = -2)
 
-        x = f.dropout(attented, self.dropout)
+        x = f.dropout(x, self.dropout)
         x = self.gcn1(x, adj_hat)
         x = f.dropout(x, self.dropout)
         x = self.gcn2(x, adj_hat)

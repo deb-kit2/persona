@@ -16,7 +16,7 @@ class BARTDecoder(BartPretrainedModel) :
     self.decoder = BartDecoder(config, self.shared)
   
   def forward(self, input_ids = None, input_embeds = None, attention_mask = None, 
-              encoder_attentions_mask = None, encoder_hidden_states = None, 
+              encoder_attention_mask = None, encoder_hidden_states = None, 
               output_attentions = False, output_hidden_states = False, return_dict = False) :
 
     output_attentions = output_attentions if output_attentions is not None else self.config.output_attentions
@@ -29,8 +29,8 @@ class BARTDecoder(BartPretrainedModel) :
         input_ids = input_ids,
         attention_mask = attention_mask,
         encoder_hidden_states = encoder_hidden_states,
-        encoder_attentions_mask = encoder_attentions_mask,
-        input_embeds = input_embeds,
+        encoder_attention_mask = encoder_attention_mask,
+        inputs_embeds = input_embeds,
         output_attentions = output_attentions,
         output_hidden_states = output_hidden_states,
         return_dict = return_dict,

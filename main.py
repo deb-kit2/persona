@@ -34,7 +34,7 @@ def parse_args() :
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
     parser.add_argument("--encrep", type = str, default = "first",
                         help = "can be 'mean' or 'first'")
-    parser.add_argument("--heads", type = int, default = 1)
+    parser.add_argument("--num_heads", type = int, default = 1)
     parser.add_argument("--dropout",type = float, default = 0.25)
 
     # callbacks
@@ -65,7 +65,7 @@ def train_step(model, data, optimizer, scheduler, loss_function) :
                        adj_hat = batch["adj"], mask = batch["conv_mask"],
                        encoder_hidden_states = batch["encoder_hidden_states"], 
                        encoder_attention_mask = batch["encoder_attention_mask"],
-                       deoder_input_ids = batch["deoder_input_ids"], 
+                       deocder_input_ids = batch["decoder_input_ids"], 
                        decoder_attention_mask = batch["decoder_attention_mask"])
         
         loss = loss_function(logits.view(-1, model.decoder.config.vocab_size), batch["labels"].view(-1))
@@ -90,7 +90,7 @@ def evaluate_step(model, data, loss_function) :
                        adj_hat = batch["adj"], mask = batch["conv_mask"],
                        encoder_hidden_states = batch["encoder_hidden_states"], 
                        encoder_attention_mask = batch["encoder_attention_mask"],
-                       deoder_input_ids = batch["deoder_input_ids"], 
+                       decoder_input_ids = batch["decoder_input_ids"], 
                        decoder_attention_mask = batch["decoder_attention_mask"])
         
         loss = loss_function(logits.view(-1, model.decoder.config.vocab_size), batch["labels"].view(-1))
@@ -164,7 +164,7 @@ if __name__ == "__main__" :
     logging.info("Test data loaded.")
 
     model = PersonaModel(args).to(device)
-    logging.info("Model initialized.")
+    logging.info("Model initialized.") 
     
     if args.train :
         optimizer = AdamW(model.parameters(), lr = args.lr)

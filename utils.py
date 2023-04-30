@@ -154,8 +154,8 @@ class PersonaDataset(Dataset) :
             
             "persona_cls" : encoded_persona,
 
-            "encoder_hidden_state" : encoded_last.squeeze(),
-            "encoder_attention_mask" : last.attention_mask,
+            "encoder_hidden_states" : encoded_last.squeeze(),
+            "encoder_attention_mask" : last.attention_mask.squeeze(),
 
             "decoder_input_ids" : target.input_ids.squeeze(),
             "decoder_attention_mask" : target.attention_mask.squeeze(),
