@@ -65,7 +65,7 @@ def train_step(model, data, optimizer, scheduler, loss_function) :
                        adj_hat = batch["adj"], mask = batch["conv_mask"],
                        encoder_hidden_states = batch["encoder_hidden_states"], 
                        encoder_attention_mask = batch["encoder_attention_mask"],
-                       deocder_input_ids = batch["decoder_input_ids"], 
+                       decoder_input_ids = batch["decoder_input_ids"], 
                        decoder_attention_mask = batch["decoder_attention_mask"])
         
         loss = loss_function(logits.view(-1, model.decoder.config.vocab_size), batch["labels"].view(-1))
