@@ -186,7 +186,7 @@ if __name__ == "__main__" :
     else :
         raise NotImplementedError()
 
-    DATA_PATH = "persona/data/personachat_data.json"
+    DATA_PATH = "personachat_data.json"
     with open(DATA_PATH, "r", encoding = "utf-8") as fi :
         data = json.load(fi)[subset]
 
