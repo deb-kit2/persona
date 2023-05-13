@@ -7,6 +7,8 @@ from torch.utils.data import Dataset
 from transformers import BartTokenizer, T5Tokenizer
 from modules.encoders import BARTEncoder, T5Encoder
 
+device = "cuda" if torch.cuda.is_available() else "cpu"
+
 
 def construct_adj(n_nodes, n_persona, max_n = 56) :
     # returns the unweighted and relation-unaware graph
@@ -52,6 +54,9 @@ class PersonaDataset(Dataset) :
             # init bart
             self.tokenizer = BartTokenizer.from_pretrained(args.pretrained_name)
             self.encoder = BARTEncoder.from_pretrained(args.pretrained_name)
+
+            self.encoder.to(device)
+            self.encoder.eval()
         else :
             raise NotImplementedError()
 
@@ -93,14 +98,14 @@ class PersonaDataset(Dataset) :
             return_tensors = "pt",
             return_attention_mask = True,
             verbose = False
-        )
+        ).to(device)
         encoded_conv = self.encoder(conversation.input_ids, conversation.attention_mask)[0]
         if self.encrep == "first" :
             encoded_conv = encoded_conv[:, 0, :]
         else :
             encoded_conv = torch.mean(encoded_conv, dim = -2)
 
-        dummy = torch.zeros((self.max_conv_length - self.conv_lens[index], self.d_in), dtype = torch.float32)
+        dummy = torch.zeros((self.max_conv_length - self.conv_lens[index], self.d_in), dtype = torch.float32).to(device)
         encoded_conv = torch.cat((dummy, encoded_conv), dim = 0)
 
         mask = [True] * (self.max_conv_length - self.conv_lens[index]) + [False] * self.conv_lens[index]
@@ -114,7 +119,7 @@ class PersonaDataset(Dataset) :
             return_tensors = "pt",
             return_attention_mask = True,
             verbose = False
-        )
+        ).to(device)
 
         labels = copy.deepcopy(target.input_ids)
         labels = torch.tensor([[-100 if token == self.tokenizer.pad_token_id else token for token in l] for l in labels])
@@ -127,14 +132,14 @@ class PersonaDataset(Dataset) :
             return_tensors = "pt",
             return_attention_mask = True,
             verbose = False
-        )
+        ).to(device)
         encoded_persona = self.encoder(persona.input_ids, persona.attention_mask)[0]
         if self.encrep == "first" :
             encoded_persona = encoded_persona[:, 0, :]
         else :
             encoded_persona = torch.mean(encoded_persona, dim = -2)
 
-        dummy = torch.zeros((self.max_persona_length - len(self.persona[index]), self.d_in), dtype = torch.float32)
+        dummy = torch.zeros((self.max_persona_length - len(self.persona[index]), self.d_in), dtype = torch.float32).to(device)
         encoded_persona = torch.cat((encoded_persona, dummy), dim = 0)
 
         last = self.tokenizer.batch_encode_plus(
@@ -145,7 +150,7 @@ class PersonaDataset(Dataset) :
             return_tensors = "pt",
             return_attention_mask = True,
             verbose = False
-        )
+        ).to(device)
         encoded_last = self.encoder(last.input_ids, last.attention_mask)[0]
 
         adj = construct_adj(self.conv_lens[index], len(self.persona[index]))
