@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 import argparse
@@ -143,6 +144,11 @@ if __name__ == "__main__" :
     torch.manual_seed(42)
 
     args = parse_args()
+
+    if not os.path.isdir("models") :
+        os.mkdir("models")
+    if not os.path.isdir("logs") :
+        os.mkdir("logs")
 
     logging.basicConfig(level = logging.DEBUG,
                         handlers = [
