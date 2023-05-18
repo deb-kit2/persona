@@ -211,7 +211,12 @@ if __name__ == "__main__" :
 
     for i in tqdm(range(len(conv_id))) :
         x = __getitem__(i)
-        writer.write(json.dumps(x) + "\n")
+        writer.write(json.dumps(x))
+
+        if i == len(conv_id) - 1 :
+            writer.write("\n")
+        else :
+            writer.write(",\n")
 
     writer.write("]\n")
     writer.close()

@@ -21,7 +21,7 @@ def parse_args() :
     parser = argparse.ArgumentParser()
 
     # training args
-    parser.add_argument("--train", type = bool, default = True)
+    parser.add_argument("--train", action = "store_true")
     parser.add_argument("--lr", type = float, default = 5e-5)
     parser.add_argument("--epochs", type = int, default = 200)
     parser.add_argument("--max_conv_length", type = int, default = 50)

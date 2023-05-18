@@ -9,8 +9,8 @@ class PersonaDataset(Dataset) :
     # Dataset class for the PersonaChat dataset
 
     def __init__(self, args, subset = "train") :
-        name = "data/" + args.endec + "." + args.pretrained_name.split("/")[-1]
-        name += "." + args.encrep + subset + ".json"
+        name = "data/" + args.encdec + "." + args.pretrained_name.split("-")[-1]
+        name += "." + args.encrep + "." + subset + ".json"
 
         with open(name, "r", encoding = "utf-8") as fi :
             self.data = json.load(fi)
