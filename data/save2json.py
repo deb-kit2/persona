@@ -18,6 +18,7 @@ encdec = "bart"
 pretrained_name = "facebook/bart-base"
 d_in = 768
 encrep = "first"
+graph_type = "paperGCN"
 
 max_len = 32
 max_conv_length = 50
@@ -47,6 +48,7 @@ def parse_args() :
     parser.add_argument("--pretrained_name", type = str, default = "facebook/bart-base")
     parser.add_argument("--encrep", type = str, default = "first",
                         help = "can be 'mean' or 'first'")
+    parser.add_argument("--graph_type", type = str, default = "paperGCN")
 
     args = parser.parse_args()
     return args
@@ -138,8 +140,11 @@ def __getitem__(index) :
     ).to(device)
     encoded_last = encoder(las.input_ids, las.attention_mask)[0]
 
-    adj = construct_adj(conv_lens[index], len(persona[index]))
-
+    if graph_type == "paperGCN" :
+        adj = construct_adj(conv_lens[index], len(persona[index]))
+    else :
+        raise NotImplementedError("Not implemetned others.")
+    
     return {
         "conv_id" : conv_id[index],
         "conv_cls" : encoded_conv.tolist(),
@@ -166,6 +171,7 @@ if __name__ == "__main__" :
     encdec = args.encdec
     pretrained_name = args.pretrained_name
     encrep = args.encrep
+    graph_type = args.graph_type
     
     if args.pretrained_name.endswith("base") :
         d_in = 768
