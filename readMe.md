@@ -1,5 +1,5 @@
 ## Inside new model
- - [ ] update dataloader fields to match model forward
+ - [x] update dataloader fields to match model forward
  - [ ] modify main.py
  - [ ] Metrics
  - [x] Flexibility to switch Graph types : adj + args

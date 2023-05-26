@@ -153,7 +153,7 @@ def __getitem__(index) :
         "persona_cls" : encoded_persona.tolist(),
 
         "encoder_hidden_states" : encoded_last.squeeze().tolist(),
-        "encoder_attention_mask" : las.attention_mask.squeeze().tolist(),
+        "attention_mask" : las.attention_mask.squeeze().tolist(),
 
         "decoder_input_ids" : tar.input_ids.squeeze().tolist(),
         "decoder_attention_mask" : tar.attention_mask.squeeze().tolist(),

@@ -104,7 +104,7 @@ class BartForPersonaAwareGeneration(BartPretrainedModel):
 
     def forward(
         self,
-        x = None, persona = None, adj_hat = None, mask = None,
+        conv_cls = None, persona_cls = None, adj = None, mask = None,
         encoder_hidden_states = None,
         attention_mask: Optional[torch.Tensor] = None,
         decoder_input_ids: Optional[torch.LongTensor] = None,
@@ -136,18 +136,18 @@ class BartForPersonaAwareGeneration(BartPretrainedModel):
 
         if encoder_hidden_states is not None :
             mask_ = mask.unsqueeze(dim = 1).repeat(self.num_heads, self.max_conv_length, 1)
-            attented, _ = self.mha(x, x, x, 
+            attented, _ = self.mha(conv_cls, conv_cls, conv_cls, 
                                   need_weights = False, 
                                   attn_mask = mask_)
             # add positional embedding?
 
             x = attented * (~ mask.unsqueeze(dim = 2))
-            x = torch.cat((persona, attented), dim = -2)
+            x = torch.cat((persona_cls, attented), dim = -2)
 
             x = f.dropout(x, self.dropout)
-            x = self.gcn1(x, adj_hat)
+            x = self.gcn1(x, adj)
             x = f.dropout(x, self.dropout)
-            x = self.gcn2(x, adj_hat)
+            x = self.gcn2(x, adj)
 
             cls = x[:, -1, :]
             encoder_hidden_states[:, 0, :] = cls

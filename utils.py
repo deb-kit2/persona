@@ -21,4 +21,7 @@ class PersonaDataset(Dataset) :
         data = self.data[index]
         data = {k : torch.tensor(v) for k, v in data.items()}
         
+        data["decoder_input_ids"] = data["decoder_input_ids"].long()
+        data["decoder_attention_mask"] = data["decoder_attention_mask"].long()
+
         return data
