@@ -1,8 +1,6 @@
-## To - do :
- - [x] Model forward masking
- - [x] finish main.py
- - [x] adj in utils
- - [x] logging 
- - [ ] metrics
- - [x] test in main
+## Inside new model
+ - [ ] update dataloader fields to match model forward
+ - [ ] modify main.py
+ - [ ] Metrics
+ - [ ] Flexibility to switch Graph types : adj + args
  - [ ] T5
