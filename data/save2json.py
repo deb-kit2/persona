@@ -210,7 +210,7 @@ if __name__ == "__main__" :
         del data
 
     name = pretrained_name.split("/")[-1]
-    name = ".".join(name.split("-") + [encrep, subset, "json"])
+    name = ".".join(name.split("-") + [encrep, graph_type, subset, "json"])
 
     writer = open(name, "w", encoding = "utf-8")
     writer.write("[\n")
