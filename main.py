@@ -70,7 +70,7 @@ if __name__ == "__main__" :
     
 
     training_args = Seq2SeqTrainingArguments(
-        output_dir = "models/",
+        output_dir = "models",
         do_train = args.train,
         do_eval = True,
         
@@ -85,7 +85,7 @@ if __name__ == "__main__" :
         eval_accumulation_steps = 10,
 
         log_level = "debug",
-        logging_dir = "logs/",
+        logging_dir = "logs",
         logging_strategy = "epoch",
 
         save_strategy = "epoch",
