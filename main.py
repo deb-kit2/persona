@@ -7,12 +7,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as f
 
-from model import PersonaModel
+from model import BartForPersonaAwareGeneration
 from utils import PersonaDataset
 
 from torch.utils.data import DataLoader
 
-from transformers import AdamW, get_scheduler
+from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -23,6 +23,7 @@ def parse_args() :
     # training args
     parser.add_argument("--train", type = bool, default = True)
     parser.add_argument("--lr", type = float, default = 5e-5)
+    parser.add_argument("--weight_decay", type = float, default = 0.01)
     parser.add_argument("--epochs", type = int, default = 200)
     parser.add_argument("--max_conv_length", type = int, default = 50)
     parser.add_argument("--batch_size", type = int, default = 8)
@@ -41,7 +42,7 @@ def parse_args() :
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
     parser.add_argument("--save_best", type = bool, default = True)
-    parser.add_argument("--save_name", type = str, required = True)
+    parser.add_argument("--save_name", type = str, required = True, help = "models/trial_1.pt")
     
     parser.add_argument("--print_every", type = int, default = 1)
 
@@ -139,6 +140,9 @@ def train(model, train_data, test_data,
     return history
 
 
+def someClass(args) : 
+    return
+
 if __name__ == "__main__" :
     # reproducibility
     torch.manual_seed(42)
@@ -158,7 +162,32 @@ if __name__ == "__main__" :
                         format = "%(levelname)s : %(message)s")
     
     logging.info("\n" + json.dumps({key : value for key, value in vars(args).items()}, indent = 4) + "\n")
+    
 
+    training_args = Seq2SeqTrainingArguments(
+        output_dir = "models/",
+        do_train = args.train,
+        do_eval = args.test,
+        
+        per_device_train_batch_size = args.batch_size,
+        per_device_eval_batch_size = args.batch_size,
+        learning_rate = args.lr,
+        weight_decay = args.weight_decay,
+        num_train_epochs = args.epochs,
+        warmup_steps = args.warmup,
+        
+        evaluation_strategy = "epoch",
+        eval_accumulation_steps = 10,
+
+        log_level = "debug",
+        logging_dir = "logs/",
+        logging_strategy = "epoch",
+
+        save_strategy = "epoch",
+        save_total_limit = 2,
+        report_to = "none"
+    )
+    logging.info("Training args ready.")
     
     if args.train : 
         train_data = PersonaDataset(args, "train")
@@ -169,27 +198,24 @@ if __name__ == "__main__" :
     test_data = DataLoader(test_data, batch_size = args.batch_size, shuffle = False)
     logging.info("Test data loaded.")
 
-    model = PersonaModel(args).to(device)
+    model = BartForPersonaAwareGeneration.from_pretrained(args.pretrained_name, args)
     logging.info("Model initialized.") 
     
+    
     if args.train :
-        optimizer = AdamW(model.parameters(), lr = args.lr)
-        scheduler = get_scheduler("linear", 
-                                  optimizer = optimizer,
-                                  num_warmup_steps = args.warmup,
-                                  num_training_steps = args.epochs * len(train_data))
-        logging.info("Optimizer and Scheduler ready.")
+        trainer = Seq2SeqTrainer(
+            model = model,
+            args = training_args,
+            train_dataset = train_data,
+            eval_dataset = test_data,
+        )
+        logging.info("Trainer ready. Starting model training...")
         
-        history = train(model, train_data, test_data,
-                        optimizer = optimizer, scheduler = scheduler,
-                        max_epochs = args.epochs, early_stopping = args.es, 
-                        print_every = args.print_every, save_name = args.save_name)
+        trainer.train()
         logging.info("Model training finished.")
+        
+        trainer.save_model("models/")
+        logging.info("Saved the model at \"models/\"")
 
     else :
-        model.load_state_dict(args.save_name)
-        logging.info("Model weights loaded.")
-
-        loss, acc = evaluate_step(model, test_data, nn.CrossEntropyLoss())
-        logging.info(f"Model f{args.save_name}\n##########\nValidation loss : {loss:.4f}, Validation accuracy : {acc:.4f}")
-        
+        raise NotImplementedError("Testing in main not yet supported.")
