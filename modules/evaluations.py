@@ -34,7 +34,7 @@ def bleu_score(reference, hypothesis, gram) :
 def score_rouge(str1, str2) :
     rouge = Rouge(metrics=["rouge-l"])
     scores = rouge.get_scores(str1, str2, avg = True)
-    rouge_l = scores['rouge-l']
+    rouge_l = scores['rouge-l']["f"]
     return rouge_l
 
 

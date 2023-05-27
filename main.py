@@ -56,6 +56,8 @@ if __name__ == "__main__" :
 
     if not os.path.isdir("models") :
         os.mkdir("models")
+    if not os.path.isdir(args.save_name) :
+        os.mkdir(args.save_name)
     if not os.path.isdir("logs") :
         os.mkdir("logs")
 
@@ -70,7 +72,7 @@ if __name__ == "__main__" :
     
 
     training_args = Seq2SeqTrainingArguments(
-        output_dir = "models",
+        output_dir = args.save_name,
         do_train = args.train,
         do_eval = True,
         
@@ -118,8 +120,8 @@ if __name__ == "__main__" :
         trainer.train()
         logging.info("Model training finished.")
         
-        trainer.save_model("models/")
-        logging.info("Saved the model at \"models/\"")
+        trainer.save_model(args.savename)
+        logging.info(f"Saved the model at {args.save_name}")
 
     else :
         raise NotImplementedError("Testing in main not yet supported.")
