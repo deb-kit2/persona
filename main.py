@@ -74,7 +74,7 @@ if __name__ == "__main__" :
     training_args = Seq2SeqTrainingArguments(
         output_dir = "models/",
         do_train = args.train,
-        do_eval = args.test,
+        do_eval = True,
         
         per_device_train_batch_size = args.batch_size,
         per_device_eval_batch_size = args.batch_size,
@@ -95,6 +95,7 @@ if __name__ == "__main__" :
         report_to = "none"
     )
     logging.info("Training args ready.")
+    
     
     if args.train : 
         train_data = PersonaDataset(args, "train")
@@ -126,4 +127,3 @@ if __name__ == "__main__" :
 
     else :
         raise NotImplementedError("Testing in main not yet supported.")
-    

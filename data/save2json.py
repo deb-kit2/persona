@@ -144,7 +144,6 @@ if __name__ == "__main__" :
     encdec = args.encdec
     pretrained_name = args.pretrained_name
     encrep = args.encrep
-    graph_type = args.graph_type
     
     if args.pretrained_name.endswith("base") :
         d_in = 768
@@ -183,7 +182,7 @@ if __name__ == "__main__" :
         del data
 
     name = pretrained_name.split("/")[-1]
-    name = ".".join(name.split("-") + [encrep, graph_type, subset, "json"])
+    name = ".".join(name.split("-") + [encrep, subset, "json"])
 
     writer = open(name, "w", encoding = "utf-8")
     writer.write("[\n")

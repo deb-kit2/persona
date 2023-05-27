@@ -16,9 +16,6 @@ from transformers.modeling_outputs import (
 )
 
 
-logger = logging.get_logger(__name__)
-
-
 def shift_tokens_right(input_ids: torch.Tensor, pad_token_id: int, decoder_start_token_id: int):
     """
     Shift input ids one token to the right.
@@ -160,7 +157,8 @@ class BartForPersonaAwareGeneration(BartPretrainedModel):
 
         if labels is not None:
             if use_cache:
-                logger.warning("The `use_cache` argument is changed to `False` since `labels` is provided.")
+                pass
+                # logger.warning("The `use_cache` argument is changed to `False` since `labels` is provided.")
             use_cache = False
             if decoder_input_ids is None and decoder_inputs_embeds is None:
                 decoder_input_ids = shift_tokens_right(
