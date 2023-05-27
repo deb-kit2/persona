@@ -6,7 +6,6 @@ import json
 from tqdm import tqdm
 
 import torch
-from torch.utils.data import Dataset
 
 sys.path.append("..")
 from transformers import BartTokenizer, T5Tokenizer
@@ -18,7 +17,6 @@ encdec = "bart"
 pretrained_name = "facebook/bart-base"
 d_in = 768
 encrep = "first"
-graph_type = "paperGCN"
 
 max_len = 32
 max_conv_length = 50
@@ -48,32 +46,11 @@ def parse_args() :
     parser.add_argument("--pretrained_name", type = str, default = "facebook/bart-base")
     parser.add_argument("--encrep", type = str, default = "first",
                         help = "can be 'mean' or 'first'")
-    parser.add_argument("--graph_type", type = str, default = "paperGCN")
 
     args = parser.parse_args()
     return args
 
-def construct_adj(n_nodes, n_persona, max_n = 56) :
-    # returns the unweighted and relation-unaware graph
-    # persona self, make bidirectional next experiment: reason persona might change over conv
-    
-    adj = torch.zeros((max_n, max_n))
-    # to avoid div by 0 or -1 in graphs
-    for i in range(max_n - n_nodes) :
-        adj[i][i] = 2
 
-    for i in range(max_n - n_nodes, max_n) :
-        adj[i][i] = 1
-        if i + 1 < max_n :
-            adj[i + 1, i] = 1
-        if i + 2 < max_n :
-            adj[i + 2, i] = 1
-            adj[i, i + 2] = 1
-    for i in range(56 - n_nodes + 1, max_n, 2) :
-        for j in range(n_persona) :
-            adj[i, j] = 1
-
-    return adj
 
 def __getitem__(index) :
 
@@ -140,16 +117,14 @@ def __getitem__(index) :
     ).to(device)
     encoded_last = encoder(las.input_ids, las.attention_mask)[0]
 
-    if graph_type == "paperGCN" :
-        adj = construct_adj(conv_lens[index], len(persona[index]))
-    else :
-        raise NotImplementedError("Not implemetned others.")
     
     return {
         "conv_id" : conv_id[index],
+        "conv_lens" : conv_lens[index],
         "conv_cls" : encoded_conv.tolist(),
         "conv_mask" : mask.tolist(),
         
+        "persona_lens" : len(persona[index]),
         "persona_cls" : encoded_persona.tolist(),
 
         "encoder_hidden_states" : encoded_last.squeeze().tolist(),
@@ -159,8 +134,6 @@ def __getitem__(index) :
         "decoder_attention_mask" : tar.attention_mask.squeeze().tolist(),
 
         "labels" : labels.squeeze().tolist(),
-
-        "adj" : adj.tolist()
     }
 
 
