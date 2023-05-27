@@ -192,9 +192,9 @@ if __name__ == "__main__" :
         writer.write(json.dumps(x))
 
         if i == len(conv_id) - 1 :
-            writer.write(",\n")
-        else :
             writer.write("\n")
+        else :
+            writer.write(",\n")
 
 
     writer.write("]\n")

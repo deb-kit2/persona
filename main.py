@@ -10,8 +10,6 @@ import torch.nn.functional as f
 from model import BartForPersonaAwareGeneration
 from utils import PersonaDataset
 
-from torch.utils.data import DataLoader
-
 from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -99,11 +97,9 @@ if __name__ == "__main__" :
     
     if args.train : 
         train_data = PersonaDataset(args, "train")
-        train_data = DataLoader(train_data, batch_size = args.batch_size, shuffle = True)
         logging.info("Train data loaded.")
 
     test_data = PersonaDataset(args, "valid")
-    test_data = DataLoader(test_data, batch_size = args.batch_size, shuffle = False)
     logging.info("Test data loaded.")
 
     model = BartForPersonaAwareGeneration.from_pretrained(args.pretrained_name, args)
