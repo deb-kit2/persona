@@ -40,7 +40,7 @@ def parse_args() :
     # callbacks
     parser.add_argument("--es", type = int, default = 10)
     parser.add_argument("--save_best", type = bool, default = True)
-    parser.add_argument("--save_name", type = str, required = True, help = "models/trial_1.pt")
+    parser.add_argument("--save_name", type = str, required = True, help = "models/trial_1")
     
     parser.add_argument("--print_every", type = int, default = 1)
 

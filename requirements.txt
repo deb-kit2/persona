@@ -1,2 +1,6 @@
 transformers
 accelerate
+nltk
+sentence-transformers
+rouge
+rouge-score
