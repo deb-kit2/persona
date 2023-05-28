@@ -119,7 +119,7 @@ if __name__ == "__main__" :
         trainer.train()
         logging.info("Model training finished.")
         
-        trainer.save_model(args.savename)
+        trainer.save_model(args.save_name)
         logging.info(f"Saved the model at {args.save_name}")
 
     else :
