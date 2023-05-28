@@ -10,7 +10,7 @@ import torch.nn.functional as f
 from model import BartForPersonaAwareGeneration
 from utils import PersonaDataset
 
-from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
+from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, EarlyStoppingCallback
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -114,6 +114,7 @@ if __name__ == "__main__" :
             args = training_args,
             train_dataset = train_data,
             eval_dataset = test_data,
+            callbacks = [EarlyStoppingCallback(early_stopping_patience = args.es)]
         )
         logging.info("Trainer ready. Starting model training...")
         
