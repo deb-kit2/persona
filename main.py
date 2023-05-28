@@ -10,7 +10,7 @@ import torch.nn.functional as f
 from model import BartForPersonaAwareGeneration
 from utils import PersonaDataset
 
-from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer, EarlyStoppingCallback
+from transformers import Seq2SeqTrainingArguments, Seq2SeqTrainer
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -38,7 +38,6 @@ def parse_args() :
     parser.add_argument("--dropout",type = float, default = 0.25)
 
     # callbacks
-    parser.add_argument("--es", type = int, default = 10)
     parser.add_argument("--save_best", type = bool, default = True)
     parser.add_argument("--save_name", type = str, required = True, help = "models/trial_1")
     
@@ -114,7 +113,6 @@ if __name__ == "__main__" :
             args = training_args,
             train_dataset = train_data,
             eval_dataset = test_data,
-            callbacks = [EarlyStoppingCallback(early_stopping_patience = args.es)]
         )
         logging.info("Trainer ready. Starting model training...")
         
