@@ -139,7 +139,7 @@ class BartForPersonaAwareGeneration(BartPretrainedModel):
             # add positional embedding?
 
             x = attented * (~ conv_mask.unsqueeze(dim = 2))
-            x = torch.cat((persona_cls, attented), dim = -2)
+            x = torch.cat((persona_cls, x), dim = -2)
 
             x = f.dropout(x, self.dropout)
             x = self.gcn1(x, adj)

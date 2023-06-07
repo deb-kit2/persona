@@ -120,10 +120,12 @@ def generate(model, data, tokenizer, args) :
         outputs = model.generate(
             inputs_embeds = encoder_hidden_states, 
             attention_mask = batch["attention_mask"],
-            do_sample = args.do_sample, max_length = args.max_gen_length,
+            do_sample = args.do_sample, 
+            max_length = args.max_gen_length,
             early_stopping = args.early_stopping, 
             no_repeat_ngram_size = args.no_repeat_ngram_size,
-            top_p = args.top_p, top_k = args.top_k,
+            top_p = args.top_p, 
+            top_k = args.top_k,
             temperature = args.temperature,
             num_beams = args.num_beams
             )
@@ -150,7 +152,7 @@ def generate(model, data, tokenizer, args) :
     b1, b2, b3, b4 = 0, 0, 0, 0
     p = 0
     L = len(results["results"])
-    for d in range(results["results"]) :
+    for d in results["results"] :
         r += d["metrics"]["rougeL"]
         b1 += d["metrics"]["bleu_1gram"]
         b2 += d["metrics"]["bleu_2gram"]
