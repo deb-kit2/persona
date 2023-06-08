@@ -31,6 +31,7 @@ def parse_args() :
 
     # vocab and embedding
     parser.add_argument("--vocab_size", type = int, default = 50265)
+    parser.add_argument("--embedding_path", type = str, default = "data/embedding.table.bart.base.pt")
 
     # model args
     parser.add_argument("--max_length", type = int, default = 32)

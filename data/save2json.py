@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 import copy
@@ -154,6 +155,12 @@ if __name__ == "__main__" :
         encoder.to(device)
     else :
         raise NotImplementedError()
+
+    embeddings_name = pretrained_name.split("/")[-1]
+    embeddings_name = ".".join(["embedding", "table"] + embeddings_name.split("-") + [".pt"])
+    if not os.path.isfile(embeddings_name) :
+        encoder.shared.weight.requires_grad = False
+        torch.save(encoder.shared.weight, embeddings_name)
 
     DATA_PATH = "personachat_data.json"
     with open(DATA_PATH, "r", encoding = "utf-8") as fi :
