@@ -45,8 +45,6 @@ class PersonaDataset(Dataset) :
         data = {k : torch.tensor(v) for k, v in data.items()}
         
         data["decoder_input_ids"] = data["decoder_input_ids"].long()
-        data["decoder_attention_mask"] = data["decoder_attention_mask"].long()
-
         data["adj"] = construct_adj(data["conv_lens"], data["persona_lens"])
 
         return data

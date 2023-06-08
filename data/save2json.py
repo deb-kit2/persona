@@ -72,8 +72,6 @@ def __getitem__(index) :
     dummy = torch.zeros((max_conv_length - conv_lens[index], d_in), dtype = torch.float32).to(device)
     encoded_conv = torch.cat((dummy, encoded_conv), dim = 0)
 
-    mask = [True] * (max_conv_length - conv_lens[index]) + [False] * conv_lens[index]
-    mask = torch.tensor(mask, dtype = torch.bool)
 
     tar = tokenizer.batch_encode_plus(
         [target[index]],
@@ -87,6 +85,8 @@ def __getitem__(index) :
 
     labels = copy.deepcopy(tar.input_ids)
     labels = torch.tensor([[-100 if token == tokenizer.pad_token_id else token for token in l] for l in labels])
+    labels = labels.squeeze().tolist()
+    labels = labels[1 : ] + [-100]
 
     per = tokenizer.batch_encode_plus(
         persona[index],
@@ -106,18 +106,10 @@ def __getitem__(index) :
     dummy = torch.zeros((max_persona_length - len(persona[index]), d_in), dtype = torch.float32).to(device)
     encoded_persona = torch.cat((encoded_persona, dummy), dim = 0)
 
-    las = tokenizer.batch_encode_plus(
-        [last[index]],
-        max_length = max_len,
-        truncation = True,
-        padding = "max_length",
-        return_tensors = "pt",
-        return_attention_mask = True,
-        verbose = False
-    ).to(device)
-    encoded_last = encoder(las.input_ids, las.attention_mask)[0]
+    mask = [True] * (max_conv_length - conv_lens[index]) + [False] * conv_lens[index]
+    h_enc_mask = [False] * len(persona[index]) + [True] * (max_persona_length - len(persona[index]))
+    h_enc_mask = h_enc_mask + mask
 
-    
     return {
         "conv_id" : conv_id[index],
         "conv_lens" : conv_lens[index],
@@ -127,13 +119,12 @@ def __getitem__(index) :
         "persona_lens" : len(persona[index]),
         "persona_cls" : encoded_persona.tolist(),
 
-        "encoder_hidden_states" : encoded_last.squeeze().tolist(),
-        "attention_mask" : las.attention_mask.squeeze().tolist(),
-
         "decoder_input_ids" : tar.input_ids.squeeze().tolist(),
         "decoder_attention_mask" : tar.attention_mask.squeeze().tolist(),
 
-        "labels" : labels.squeeze().tolist(),
+        "labels" : labels,
+
+        "h_enc_mask" : h_enc_mask
     }
 
 
