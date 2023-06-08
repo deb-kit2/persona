@@ -110,7 +110,7 @@ class PersonaAwareGeneration(nn.Module) :
         else : # small
             self.d_in = 512
         
-        self.conv_mha = MHA(args.num_heds, self.d_in)
+        self.conv_mha = MHA(args.num_heads, self.d_in)
 
         self.gcn1 = GCNLayerOrig(self.d_in, self.d_in)
         self.gcn2 = GCNLayerOrig(self.d_in, self.d_in)
@@ -157,7 +157,7 @@ class PersonaAwareGeneration(nn.Module) :
         x = self.gcn2(x, adj) 
         x = f.dropout(x, self.dropout)
 
-        h_enc = self.graph_ff(h_enc) # B, 56, d
+        h_enc = self.graph_ff(x) # B, 56, d
 
         if labels is None :
             return {

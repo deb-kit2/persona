@@ -73,7 +73,6 @@ def __getitem__(index) :
     dummy = torch.zeros((max_conv_length - conv_lens[index], d_in), dtype = torch.float32).to(device)
     encoded_conv = torch.cat((dummy, encoded_conv), dim = 0)
 
-
     tar = tokenizer.batch_encode_plus(
         [target[index]],
         max_length = max_len,
@@ -115,13 +114,13 @@ def __getitem__(index) :
         "conv_id" : conv_id[index],
         "conv_lens" : conv_lens[index],
         "conv_cls" : encoded_conv.tolist(),
-        "conv_mask" : mask.tolist(),
+        "conv_mask" : mask,
         
         "persona_lens" : len(persona[index]),
         "persona_cls" : encoded_persona.tolist(),
 
         "decoder_input_ids" : tar.input_ids.squeeze().tolist(),
-        "decoder_attention_mask" : tar.attention_mask.squeeze().tolist(),
+        "decoder_attention_mask" : (~tar.attention_mask.bool().squeeze()).tolist(),
 
         "labels" : labels,
 
@@ -157,7 +156,7 @@ if __name__ == "__main__" :
         raise NotImplementedError()
 
     embeddings_name = pretrained_name.split("/")[-1]
-    embeddings_name = ".".join(["embedding", "table"] + embeddings_name.split("-") + [".pt"])
+    embeddings_name = ".".join(["embedding", "table"] + embeddings_name.split("-") + ["pt"])
     if not os.path.isfile(embeddings_name) :
         encoder.shared.weight.requires_grad = False
         torch.save(encoder.shared.weight, embeddings_name)

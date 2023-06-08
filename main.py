@@ -69,7 +69,7 @@ def train_step(model, data, optimizer, scheduler, loss_function, vocab_size = 50
 
         logits = model(conv_cls = batch["conv_cls"], persona_cls = batch["persona_cls"], 
                        adj = batch["adj"], conv_mask = batch["conv_mask"],
-                       h_enc_mask = batch["h_enc_mask"],
+                       h_enc_mask = batch["h_enc_mask"], labels = batch["labels"],
                        decoder_input_ids = batch["decoder_input_ids"], 
                        decoder_attention_mask = batch["decoder_attention_mask"])
         
@@ -94,7 +94,7 @@ def evaluate_step(model, data, loss_function, vocab_size = 50265) :
 
         logits = model(conv_cls = batch["conv_cls"], persona_cls = batch["persona_cls"], 
                        adj = batch["adj"], conv_mask = batch["conv_mask"],
-                       h_enc_mask = batch["h_enc_mask"],
+                       h_enc_mask = batch["h_enc_mask"], labels = batch["labels"],
                        decoder_input_ids = batch["decoder_input_ids"], 
                        decoder_attention_mask = batch["decoder_attention_mask"])
         
