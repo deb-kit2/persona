@@ -26,10 +26,11 @@ python3 main.py --save_name models/trialRun --batch_size 128 --encdec bart --pre
  - It will generate responses from the save and save them comprehensively in `generation_results/` in a json, where you will get corresponding scores - per sentence and averaged.
 
 ### To-do list
- - [ ] Adj for other types of graphs
+ - [x] model.py forward pass
+ - [ ] define `x` num_relations in model.py
+ - [ ] collator
+ - [ ] Dataset class
  - [ ] T5
- - [x] Metrics and evaluate script.
- - [x] update dataloader fields to match model forward
- - [x] modify main.py
- - [x] Save only trainable parameters?
- - [x] Flexibility to switch Graph types : adj + args
+ - [ ] Metrics and evaluate script.
+ - [ ] update dataloader fields to match model forward
+ - [ ] modify main.py

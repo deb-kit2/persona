@@ -4,7 +4,7 @@ import argparse
 
 from tqdm import tqdm
 
-from model import BartForPersonaAwareGeneration
+from model import PersonaAwareGeneration
 from utils import PersonaDataset
 from modules.evaluations import similariry_score, score_rouge, bleu_score
 
@@ -31,13 +31,13 @@ def parse_args() :
     parser.add_argument("--graph_type", type = str, default = "paperGCN")
     parser.add_argument("--encrep", type = str, default = "first",
                         help = "can be 'mean' or 'first'")
-    parser.add_argument("--num_heads", type = int, default = 1)
+    parser.add_argument("--num_heads", type = int, default = 2)
     parser.add_argument("--max_conv_length", type = int, default = 50)
-    parser.add_argument("--dropout",type = float, default = 0.25)
+    parser.add_argument("--dropout",type = float, default = 0.125)
 
     # output file name
     parser.add_argument("--output_json_name", type = str, required = True) 
-    parser.add_argument("--batch_size", type = int, default = 8)
+    parser.add_argument("--batch_size", type = int, default = 32)
     
     # greedy or sampling
     parser.add_argument("--do_sample", type = bool, default = False)
